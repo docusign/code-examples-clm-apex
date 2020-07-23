@@ -1,80 +1,83 @@
 # code-examples-clm-apex
 
 ## Introduction:
-This repository will aid end users in connecting to the CLM API from Salesforce using Apex and REST API.
-We will be using JWT Authentication for authenticating to DocuSign REST API's and then performing a folder search using REST API. This recipe will serve as a building block for users to customize and apply their own strategies while interacting with CLM from Salesforce using Apex.
+This repository will aid end users in connecting to the CLM API from Salesforce using [Apex](https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_intro_what_is_apex.htm) and The REST API.
+We will be using JWT Authentication for authenticating to DocuSign REST API's and then performing a folder search using the REST API. This recipe will serve as a building block for users to customize and apply their own strategies while interacting with CLM from Salesforce using Apex.
 
 ## Pre-requisites:
-- Get a Salesforce Developer account
-https://developer.salesforce.com/signup
+- [Get a Salesforce Developer account](https://developer.salesforce.com/signup)
 
-- Get a DocuSign Developer account
-https://go.docusign.com/o/sandbox
+- [Get a DocuSign Developer account](https://go.docusign.com/o/sandbox)
 
-##  Building Blocks:
-- DocuSign Integrator Key setup.
-- Installing Github source.
-- Salesforce Remote Sites and Custom Metadata types setup.
-- Developer Console demo.
+##  Flow:
+- Set up your DocuSign Integration Key.
+- Find your DocuSign User ID and API Account ID.
+- Installing the Github source.
+- Set up Salesforce Custom Metadata.
+- Set up Salesforce Remote Sites.
+- Complete the Access Token Demo.
 
-## Step by Step Walkthrough
+## Step-by-Step Walkthrough
   
-  ### 1. DocuSign Integrator key setup 
-  - Login to your DocuSign Developer Sandbox and click on **Go to Admin** . 
-  - Select **API and Keys** link which should be found under **'Integrations'**. 
-  - Click on **Add Integrator Key**
-  - Provide an App Description and click **Save**
-  - Click on the newly created Integrator Key and from the resulting pop-up note down the **Integrator Key** . This will be a unique GUID which will be associated with your Integrator key.This needs to be updated in Salesforce.
-  - Click on **Add URI** and add 'https://localhost.com'.
-  - Click on **Add RSA Key Pair** and note down the Private Key. 
-  The Private key will be updated in Salesforce. **Do not copy the ----BEGIN RSA PRIVATE KEY---- and ----END RSA PRIVATE KEY---- lines**. 
-  Click OK. 
-  We have chosen to generate the RSA Key Pair since we will generating the JWT token to pass to the authentication key using the Private Key that we have noted down. This Private Key will be signed with Header and Body of the Request to complete the JWT token. Please refer the [JSON Web Token Bearer Grant](https://developers.docusign.com/esign-rest-api/guides/authentication/oauth2-jsonwebtoken) link for additional information on JWT and token construction.
+  ### 1. Set up your DocuSign Integration key 
+  - Login to your DocuSign Developer Account and select **Admin**. 
+  - Under **Integrations**, select **API and Keys**. 
+  - Select **Add Integration Key**
+  - Provide an **App Description** and select **Save**
+  - Click on the newly created Integrator Key. From the window that appears, note down the **Integrator Key**. This will be a unique GUID which will be associated with your Integration Key. You'll need to add this value to Salesforce later.
+  - Select **Add URI** and add 'https://localhost.com'.
+  - Select **Add RSA Key Pair** and note down the Private Key. 
+  You'll need to add the Private Key to Salesforce later. **Do not copy the ----BEGIN RSA PRIVATE KEY---- and ----END RSA PRIVATE KEY---- lines**. 
+  Select OK. 
+  We have chosen to generate the RSA Key Pair since we will generating the JWT token to pass to the authentication key using the Private Key that we have noted down. This Private Key will be signed with the header and body of the request to complete the JWT token. Please see [JSON Web Token (JWT) Grant](https://developers.docusign.com/esign-rest-api/guides/authentication/oauth2-jsonwebtoken) for additional information on JWT and token construction.
   
   
  ![Integrator Key Screenshot](/images/IntegratorKey.JPG) 
  
- #### Impersonating user for API calls.
- Since our recipe will be using the Integrator key to make CLM API calls, we must ensure that a DocuSign user provides consent to the Integrator key. In this case the DocuSign user will be our Sandbox user. In case of service integrations we can setup a service user and grant consent on this user's behalf.
+ #### Impersonating user for API calls
+ Since our recipe will be using the Integration key to make CLM API calls, we must ensure that a DocuSign user provides consent to the Integrator Key performing actions on their behalf. In this case the DocuSign user will be our Sandbox user. For service integrations, you can set up a service user and grant consent on this user's behalf.
  
  To complete this step open the following URI in a browser:
  
  `https://account-d.docusign.com/oauth/auth?
   response_type=code&scope=signature%20impersonation%20spring_read%20spring_write&client_id=YOUR_KEY&redirect_uri=https://localhost.com`
  
- Make sure we add the correct Integrator key for the client_id URL parameter and also make sure the redirect_uri parameter matches with the redirect uri you have setup under the integrator key.
- 
- This will open up a consent screen. Click Accept
+ Make sure that:
+ - For the client_id, you substitute the correct Integration Key for YOUR_INTEGRATION_KEY.
+ - The value for the redirect_uri parameter matches the redirect URI configured for the Integration Key in your DocuSign Developer Account.
+  
+ When you open the URL in your browser, a consent screen displays. Select **Accept**.
  
  ![Consent Screenshot](/images/Consent.JPG) 
  
- After clicking Accept you will be redirected to the redirect URI specified in the URI as well as the Integrator key. For the purpose of this recipe I am using 'https://localhost.com' so, if you are redirected to this URI it means that the consent has been granted successfully.
+ After clicking Accept you will be redirected to the redirect URI you specified, indicating that consent was successfully granted.
  
-  ### 2. Note down DocuSign API UserName and API AccountID.
-  - Login to your DocuSign Developer Sandbox and click on **Go to Admin** . 
-  - Select **API and Keys** link which should be found under **'Integrations'**. 
-  - Note down the **API Username** and **API AccountID**. This will be stored in Salesforce Custom Metadata.  
+  ### 2. Find your DocuSign User ID and API AccountID.
+  - Log in to your DocuSign Developer Account and select **Admin**. 
+  - Under **'Integrations'**, select **API and Keys**. 
+  - Note down the **User ID** and **API Account ID**. You'll need to add these to your Salesforce Custom Metadata.  
 
-### 3. Install Source:
-- Deploy the files present under the **src** folder to your Salesforce org. The src folder contains package package.xml which will help you to deploy the src.
-- You can use Workbench for installation. Zip all the files such that folders and xml file present under src folder are at the root of the zip file.
-- Login to Workbench
-- Click on migration -> Deploy
+### 3. Install the GitHub Source:
+Deploy the files under the **src** folder to your Salesforce org. The src folder contains the a package.xml file which will help you to deploy the src.
+You can use [Workbench](https://workbench.developerforce.com/login.php) for installation:
+- Zip all the files such that folders and xml file present under the **src** folder are at the root of the zip file.
+- Log in to Workbench
+- Select **Migration -> Deploy**
 - Select the zip file created in the earlier step. Check the **Single Package** checkbox and click on **Next**
-- Click Deploy
+- Select Deploy
 
 
 
-### 4. Salesforce Custom Metadata setup:
-- Once the source files have been deployed successfully to your Salesforce org, navigate to Setup -> Custom metadata types
+### 4. Set up Salesforce Custom Metadata:
+- Once the source files have been deployed successfully to your Salesforce org, navigate to **Setup -> Custom metadata types**.
 - Click **Manage Records** under **DocuSignRESTSettings**
 - Replace the values in the settings with the values for your DocuSign instance:
-   - DSAccount  -> Your DocuSign API AccountID noted in step 2.
-   - DSUserName -> Your DocuSign API Username noted in step 2.
-   - RequestIntegratorKey -> Your Integrator Key Id created in step 1.
-   - RequestPrivateKey -> Your Private Key created in step 1.
+   - DSAccount  -> Your DocuSign API AccountID.
+   - DSUserName -> Your DocuSign User ID.
+   - RequestIntegratorKey -> Your Integration Key Id.
+   - RequestPrivateKey -> Your Private Key.
    
-### 5. Salesforce Remote Site Settings: 
+### 5. Set up Salesforce Remote Sites: 
 - Add 'https://account-d.docusign.com' as a Remote Site URL in your Salesforce instance. 
 - Add the appropriate CLM REST API URL as a Remote Site URL in your Salesforce instance. You can find this in CLM Admin in the **Integrations** section of the **System Domains** page, or by consulting this chart: 
 
@@ -84,25 +87,25 @@ https://go.docusign.com/o/sandbox
 | **Production** | https://apina11.springcm.com    | https://apieu11.springcm.com    |
 
 
-### 6. Access Token Demo: 
-- Open Developer Console
-- Press CTRL + E (open execute Anonymous code window)
+### 6. Complete the Access Token Demo: 
+- Open the Developer Console
+- Press **CTRL + E** (open execute Anonymous code window)
 - Add the following line of code :
   `DocuSignRestUtility.getAccessToken();`
 - Highlight the added line of code and press **Execute Highlighted**  
-- Navigate to the generated log file and choose *Debug Only* level to monitor the logs generated.
-- If the Integration and setup is successfull you will notice a Status Code of 200 and the **ResponseAuthBody** parameter will also contain the `access_token`
+- Navigate to the generated log file and choose the *Debug Only* level to monitor the logs generated.
+- If the integration and setup are successfull you will notice a Status Code of 200 and the **ResponseAuthBody** parameter will also contain the `access_token`
 
 ![DeveloperConsole.JPG](/images/DeveloperConsole.JPG) 
 
 ### 7. Search CLM for a folder using Apex:
-- Open Developer Console
+- Open the Developer Console
 - Press CTRL + E (open execute Anonymous code window)
-- Add the following line of code :
+- Add the following line of code:
   `DocuSignRestUtility.searchForFolder('SEARCH_QUERY');`
 - Highlight the added line of code and press **Execute Highlighted**    
 
-This should search your CLM instance for folders matching the search query.
+This example should search your CLM instance for folders matching the search query.
 
 ## License
 
