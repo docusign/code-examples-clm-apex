@@ -77,10 +77,11 @@ https://go.docusign.com/o/sandbox
 ### 5. Salesforce Remote Site Settings: 
 - Add 'https://account-d.docusign.com' as a Remote Site URL in your Salesforce instance. 
 - Add the appropriate CLM REST API URL as a Remote Site URL in your Salesforce instance. You can find this in CLM Admin in the **Integrations** section of the **System Domains** page, or by consulting this chart: 
-|            | North America                   | Europe                          |
-|------------|---------------------------------|---------------------------------|
-| Test       | https://apiuatna11.springcm.com | https://apiuateu11.springcm.com |
-| Production | https://apina11.springcm.com    | https://apieu11.springcm.com    |
+
+|                | **North America**               | **Europe**                      |
+|----------------|---------------------------------|---------------------------------|
+| **Test**       | https://apiuatna11.springcm.com | https://apiuateu11.springcm.com |
+| **Production** | https://apina11.springcm.com    | https://apieu11.springcm.com    |
 
 
 ### 6. Access Token Demo: 
