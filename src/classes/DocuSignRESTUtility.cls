@@ -5,15 +5,15 @@
 public class DocuSignRestUtility {
 
     //Get Rest Configuration Setings from Custom Metadata provided as a part of the installation source 
-    private static Map<String, CLMRestSettings__mdt> settingsMap { 
+    private static Map<String, DocuSignRestSettings__mdt> settingsMap { 
         //Getter Method
         get {
             //populate only if settingsMap is null
             if (settingsMap == null) {
-                settingsMap = new Map<String, CLMRestSettings__mdt>();
+                settingsMap = new Map<String, DocuSignRestSettings__mdt>();
                 //Query the Custom Metadata and add it to the Map
                 //Query against Custom Metadata does not count against the SOQL query Limit
-                for (CLMRestSettings__mdt setting : [Select DeveloperName,MasterLabel, Value__c from CLMRestSettings__mdt]) {
+                for (DocuSignRestSettings__mdt setting : [Select DeveloperName,MasterLabel, Value__c from DocuSignRestSettings__mdt]) {
                     settingsMap.put(setting.MasterLabel, setting);
                 }
             }
