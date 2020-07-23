@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <types>
+        <members>DocuSignRESTUtility</members>
+        <members>DocuSignJWT</members>
+        <name>ApexClass</name>
+    </types>
+    <types>
+        <members>DocuSignRESTSettings__mdt.Value__c</members>
+        <name>CustomField</name>
+    </types>
+    <types>
+        <members>DocuSignRESTSettings.DSAccountID</members>
+        <members>DocuSignRESTSettings.DSUserName</members>
+        <members>DocuSignRESTSettings.RequestAuthBody</members>
+        <members>DocuSignRESTSettings.RequestAuthContentType</members>
+        <members>DocuSignRESTSettings.RequestAuthDomain</members>
+        <members>DocuSignRESTSettings.RequestAuthEndpoint</members>
+        <members>DocuSignRESTSettings.RequestIntegratorKey</members>
+        <members>DocuSignRESTSettings.RequestPrivateKey</members>
+        <members>DocuSignRESTSettings.RequestScope</members>
+        <members>DocuSignRESTSettings.CLMv2ApiEndpoint</members>
+        <name>CustomMetadata</name>
+    </types>
+    <types>
+        <members>DocuSignRESTSettings__mdt</members>
+        <name>CustomObject</name>
+    </types>
+    <types>
+        <members>DocuSignRESTSettings__mdt-DocuSignRESTSettings Layout</members>
+        <name>Layout</name>
+    </types>
+    <version>42.0</version>
+</Package>
