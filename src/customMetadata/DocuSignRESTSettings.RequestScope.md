@@ -4,6 +4,6 @@
     <protected>false</protected>
     <values>
         <field>Value__c</field>
-        <value xsi:type="xsd:string">signature</value>
+        <value xsi:type="xsd:string">signature spring_read spring_write</value>
     </values>
 </CustomMetadata>

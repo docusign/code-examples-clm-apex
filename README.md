@@ -91,7 +91,7 @@ You can use [Workbench](https://workbench.developerforce.com/login.php) for inst
 - Open the Developer Console
 - Press **CTRL + E** (open execute Anonymous code window)
 - Add the following line of code :
-  `DocuSignRestUtility.getAccessToken();`
+  `DocuSignRESTUtility.getAccessToken();`
 - Highlight the added line of code and press **Execute Highlighted**  
 - Navigate to the generated log file and choose the *Debug Only* level to monitor the logs generated.
 - If the integration and setup are successfull you will notice a Status Code of 200 and the **ResponseAuthBody** parameter will also contain the `access_token`
@@ -102,7 +102,7 @@ You can use [Workbench](https://workbench.developerforce.com/login.php) for inst
 - Open the Developer Console
 - Press CTRL + E (open execute Anonymous code window)
 - Add the following line of code:
-  `DocuSignRestUtility.searchForFolder('SEARCH_QUERY');`
+  `DocuSignRESTUtility.searchForFolder('SEARCH_QUERY');`
 - Highlight the added line of code and press **Execute Highlighted**    
 
 This example should search your CLM instance for folders matching the search query.
