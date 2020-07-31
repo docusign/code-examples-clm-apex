@@ -25,22 +25,21 @@ We will be using JWT Authentication for authenticating to DocuSign REST API's an
   - Select **Add Integration Key**
   - Provide an **App Description** and select **Save**
   - Click on the newly created Integrator Key. From the window that appears, note down the **Integrator Key**. This will be a unique GUID which will be associated with your Integration Key. You'll need to add this value to Salesforce later.
-  - Select **Add URI** and add 'https://localhost.com'.
+  - Select **Add URI** and add 'https://localhost'.
   - Select **Add RSA Key Pair** and note down the Private Key. 
   You'll need to add the Private Key to Salesforce later. **Do not copy the ----BEGIN RSA PRIVATE KEY---- and ----END RSA PRIVATE KEY---- lines**. 
   Select OK. 
   We have chosen to generate the RSA Key Pair since we will generating the JWT token to pass to the authentication key using the Private Key that we have noted down. This Private Key will be signed with the header and body of the request to complete the JWT token. Please see [JSON Web Token (JWT) Grant](https://developers.docusign.com/esign-rest-api/guides/authentication/oauth2-jsonwebtoken) for additional information on JWT and token construction.
   
   
- ![Integrator Key Screenshot](/images/IntegratorKey.JPG) 
+ ![Integrator Key Screenshot](/images/IntegratorKey.PNG) 
  
  #### Impersonating user for API calls
  Since our recipe will be using the Integration key to make CLM API calls, we must ensure that a DocuSign user provides consent to the Integrator Key performing actions on their behalf. In this case the DocuSign user will be our Sandbox user. For service integrations, you can set up a service user and grant consent on this user's behalf.
  
  To complete this step open the following URI in a browser:
  
- `https://account-d.docusign.com/oauth/auth?
-  response_type=code&scope=signature%20impersonation%20spring_read%20spring_write&client_id=YOUR_KEY&redirect_uri=https://localhost.com`
+ `https://account-d.docusign.com/oauth/auth?response_type=code&scope=signature%20impersonation%20spring_read%20spring_write&client_id=YOUR_KEY&redirect_uri=https://localhost`
  
  Make sure that:
  - For the client_id, you substitute the correct Integration Key for YOUR_INTEGRATION_KEY.
@@ -48,7 +47,7 @@ We will be using JWT Authentication for authenticating to DocuSign REST API's an
   
  When you open the URL in your browser, a consent screen displays. Select **Accept**.
  
- ![Consent Screenshot](/images/Consent.JPG) 
+ ![Consent Screenshot](/images/Consent.PNG) 
  
  After clicking Accept you will be redirected to the redirect URI you specified, indicating that consent was successfully granted.
  
