@@ -105,7 +105,7 @@ public class DocuSignRESTUtility {
             request.setEndPoint(endpoint);
 
             //set the POST method
-            request.setMethod('GET');
+            request.setMethod('POST');
 
             //set Authentication Header
             request.setHeader('grant_type', 'Bearer');
@@ -117,7 +117,7 @@ public class DocuSignRESTUtility {
             //set Content Type Header
             request.setHeader('Content-type', 'application/json');
 
-            //set Empty Body
+            //set Empty Body - Check out https://developers.docusign.com/docs/clm-api/reference/Objects/Folders/Search/ for more details if required
             request.setBody('');
 
             //Make the request and capture the response
