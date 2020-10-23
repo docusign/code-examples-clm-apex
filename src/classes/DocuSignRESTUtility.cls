@@ -104,7 +104,7 @@ public class DocuSignRESTUtility {
             System.Debug(LoggingLevel.INFO, '***endpoint ' + endpoint);
             request.setEndPoint(endpoint);
 
-            //set the GET method
+            //set the POST method
             request.setMethod('GET');
 
             //set Authentication Header
@@ -116,6 +116,9 @@ public class DocuSignRESTUtility {
 
             //set Content Type Header
             request.setHeader('Content-type', 'application/json');
+
+            //set Empty Body
+            request.setBody('');
 
             //Make the request and capture the response
             HttpResponse response = httpProtocol.send(request);
