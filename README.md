@@ -35,7 +35,7 @@ We will be using JWT Authentication for authenticating to DocuSign REST API's an
  ![Integrator Key Screenshot](/images/IntegratorKey.PNG) 
  
  #### Impersonating user for API calls
- Since our recipe will be using the Integration key to make CLM API calls, we must ensure that a DocuSign user provides consent to the Integrator Key performing actions on their behalf. In this case the DocuSign user will be our Sandbox user. For service integrations, you can set up a service user and grant consent on this user's behalf.
+ Since our recipe will be using the Integration key to make CLM API calls, we must ensure that a DocuSign user provides consent to the Integrator Key performing actions on their behalf. In this case the DocuSign user will be our Developer account user. For service integrations, you can set up a service user and grant consent on this user's behalf.
  
  To complete this step open the following URI in a browser:
  
