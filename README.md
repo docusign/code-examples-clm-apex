@@ -108,4 +108,4 @@ This example should search your CLM instance for folders matching the search que
 
 ## License
 
-The DocuSign Java Client is licensed under the following [License](LICENSE).
+The DocuSign CLM Apex code examples are licensed under the following [License](LICENSE).
