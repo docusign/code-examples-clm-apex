@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Request_Private_Key__c</fullName>
+    <description>Private Key - comes from Apps and Integration Keys in DocuSign 
+Should NOT include `----BEGIN RSA PRIVATE KEY----` and `----END RSA PRIVATE KEY----`</description>
+    <externalId>false</externalId>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+    <label>Request Private Key</label>
+    <length>32768</length>
+    <type>LongTextArea</type>
+    <visibleLines>5</visibleLines>
+</CustomField>

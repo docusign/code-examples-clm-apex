@@ -4,8 +4,8 @@
 
 public class DocuSignRESTUtility {
 
-    //Get Rest Configuration Setings from Custom Metadata provided as a part of the installation source 
-    private static Map<String, DocuSignRESTSettings__mdt> settingsMap { 
+    //Get Rest Configuration Settings from Custom Metadata provided as a part of the installation source
+    private static Map<String, DocuSignRESTSettings__mdt> settingsMap {
         //Getter Method
         get {
             //populate only if settingsMap is null
@@ -24,114 +24,43 @@ public class DocuSignRESTUtility {
         }
     }
 
-    //This method will call the DocuSignJWT class to obtain an access token from DocuSign
-    public static String getAccessToken() {
-        String access_token = null;
-        
-        //Instantiate a request object
-        HttpRequest req = new HttpRequest();
-        //set the request METHOD
-        req.setMethod('POST');
-        
-        //set the request endpoint
-        String authendpoint = settingsMap.get('RequestAuthEndpoint').Value__c;
-        System.Debug(LoggingLevel.INFO, '**RequestAuthEndpoint' + authendpoint);
-        req.setEndPoint(authendpoint);
-
-        //set the request headers
-        //1. Content -type
-        String authRequestContentType = settingsMap.get('RequestAuthContentType').Value__c;
-        System.Debug(LoggingLevel.INFO, '**authRequestContentType ' + authRequestContentType);
-        req.setHeader('Content-type', authRequestContentType);
-
-        //2. Host
-        String authRequestDomain = settingsMap.get('RequestAuthDomain').Value__c;
-        System.Debug(LoggingLevel.INFO, '**authRequestDomain ' + authRequestDomain);
-        req.setHeader('Host', authRequestDomain);
-
-        //Body of the request
-        String alg = 'RS256';
-        String iss = settingsMap.get('RequestIntegratorKey').Value__c;
-        String pkey = settingsMap.get('RequestPrivateKey').Value__c;
-        String scope = settingsMap.get('RequestScope').Value__c;
-        DocuSignJWT jwtObject = new DocuSignJWT(alg, settingsMap.get('DSUserName').Value__c, iss, pkey, scope, authRequestDomain);
-		
-	//Set the request body	
-        String requestBody = settingsMap.get('RequestAuthBody').Value__c + jwtObject .issue();
-        System.Debug(LoggingLevel.INFO, '**RequestAuthBody' + requestBody);
-        req.setBody(requestBody);
-
-        //call the service
-        Http http = new Http();
-        HTTPResponse res = http.send(req);
-
-        System.Debug(LoggingLevel.INFO, '**ResponseAuthBody' + res.getbody());
-        System.Debug(LoggingLevel.INFO, '**ResponseAuth' + res);
-		
-	//Obtain the access token from the Response
-        if (res.getStatusCode() == 200) {
-            System.JSONParser parser = System.JSON.createParser(res.getBody());
-            while (parser.nextToken() != null) {
-                if ((parser.getCurrentToken() == JSONToken.FIELD_NAME) && (parser.getText() == 'access_token')) {
-                    parser.nextToken();
-                    access_token = parser.getText();
-                    break;
-                }
-            }
-        }
-
-        return access_token;
-
-    }
-    
     @future(callout=true)
     public static void searchForFolder(string query) {
-        //Get the access token
-        String accessToken = getAccessToken();
-        System.Debug(LoggingLevel.INFO, '***accessToken ' + accessToken);
+        //instantiate an Http instance
+        Http httpProtocol = new Http();
 
-        //Call CLM API if a non-empty access token is returned
-        if (!String.isEmpty(accessToken)) {
-            //instantiate an Http instance  
-            Http httpProtocol = new Http();
+        //instantiate an HttpRequest instance
+        HttpRequest request = new HttpRequest();
 
-            //instantiate an HttpRequest instance  
-            HttpRequest request = new HttpRequest();
+        // Set the request parameters
+        // Request endpoint for folder search call
+        String endpoint = settingsMap.get('DSAccountID').Value__c + '/folders/search?search=' + query;
+        System.debug(LoggingLevel.INFO, '***endpoint ' + endpoint);
+        request.setEndpoint('callout:Docusign' + endpoint);
 
-            //Set the request parameters 
-            // Request endpoint for folder search call
-            String endpoint = settingsMap.get('CLMv2ApiEndpoint').Value__c + settingsMap.get('DSAccountID').Value__c + '/folders/search?search=' + query;
-            System.Debug(LoggingLevel.INFO, '***endpoint ' + endpoint);
-            request.setEndPoint(endpoint);
+        //set the POST method
+        request.setMethod('POST');
 
-            //set the POST method
-            request.setMethod('POST');
+        //set Accept Header
+        request.setHeader('Accept', 'application/json');
 
-            //set Authentication Header
-            request.setHeader('grant_type', 'Bearer');
-            request.setHeader('Authorization', 'Bearer ' + accessToken);
+        //set Content Type Header
+        request.setHeader('Content-type', 'application/json');
 
-            //set Accept Header
-            request.setHeader('Accept', 'application/json');
+        //set Empty Body - Check out https://developers.docusign.com/docs/clm-api/reference/Objects/Folders/Search/ for more details if required
+        request.setBody('');
 
-            //set Content Type Header
-            request.setHeader('Content-type', 'application/json');
+        //Make the request and capture the response
+        HttpResponse response = httpProtocol.send(request);
+        System.debug(LoggingLevel.INFO, '***response.getBody() ' + response.getBody());
+        System.debug(LoggingLevel.INFO, '***response.getStatus() ' + response.getStatus());
 
-            //set Empty Body - Check out https://developers.docusign.com/docs/clm-api/reference/Objects/Folders/Search/ for more details if required
-            request.setBody('');
-
-            //Make the request and capture the response
-            HttpResponse response = httpProtocol.send(request);
-            System.Debug(LoggingLevel.INFO, '***response.getBody() ' + response.getBody());
-            System.debug(LoggingLevel.INFO, '***response.getStatus() ' + response.getStatus());
-			
-	    //Parse the response
-            String responseStatus = response.getStatus();
-            if (responseStatus.equals('Created')) {
-                DocuSignRESTUtility.FolderSearchResponse responseObject = new DocuSignRESTUtility.FolderSearchResponse();
-                responseObject = (DocuSignRESTUtility.FolderSearchResponse)System.JSON.deserialize(response.getBody(), DocuSignRESTUtility.FolderSearchResponse.class);
-                System.Debug(LoggingLevel.INFO, '***responseObject ' + responseObject);
-            }
+        //Parse the response
+        String responseStatus = response.getStatus();
+        if (responseStatus.equals('Created')) {
+            DocuSignRESTUtility.FolderSearchResponse responseObject = new DocuSignRESTUtility.FolderSearchResponse();
+            responseObject = (DocuSignRESTUtility.FolderSearchResponse)System.JSON.deserialize(response.getBody(), DocuSignRESTUtility.FolderSearchResponse.class);
+            System.debug(LoggingLevel.INFO, '***responseObject ' + responseObject);
         }
     }
 
