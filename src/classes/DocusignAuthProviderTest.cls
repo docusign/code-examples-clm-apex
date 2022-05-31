@@ -16,8 +16,21 @@ public class DocusignAuthProviderTest {
         DocusignAuthProvider instance = new DocusignAuthProvider();
         final String state = 'randomState';
 
-        PageReference ref = instance.initiate(new Map<String, String>(), state);
-        System.assertEquals(URL.getSalesforceBaseUrl().toExternalForm() + '/services/authcallback/DocuSignClientCredentials?state=' + state, ref.getUrl(), 'Incorrect URL');
+        Map<String, String> defaultConfig = getDefaultConfig();
+        PageReference ref = instance.initiate(defaultConfig, state);
+
+        String expectedURL = String.format(
+            'https://{0}/oauth/auth?client_id={1}&redirect_uri={2}{3}&response_type=code&scope={4}&state={5}',
+            new List<String>{
+                defaultConfig.get('Request_Auth_Domain__c'),
+                defaultConfig.get('Request_Integration_Key__c'),
+                EncodingUtil.urlEncode(URL.getSalesforceBaseUrl().toExternalForm(), 'UTF-8'),
+                defaultConfig.get('Callback_URL__c'),
+                EncodingUtil.urlEncode(defaultConfig.get('Request_Scope__c'), 'UTF-8'),
+                state
+            }
+        );
+        System.assertEquals(expectedURL, ref.getUrl(), 'Incorrect URL');
     }
 
     @isTest
@@ -61,6 +74,7 @@ public class DocusignAuthProviderTest {
             'error_uri' => 'some_error_uri'
         };
         final TokenEndpointHttpCalloutMockImpl httpMock = new TokenEndpointHttpCalloutMockImpl(JSON.serialize(mockResponse));
+        httpMock.setResponseStatus(400);
 
         Test.setMock(HttpCalloutMock.class, httpMock);
 
@@ -113,12 +127,14 @@ public class DocusignAuthProviderTest {
 
     private static Map<String, String> getDefaultConfig() {
         Map<String, String> config = new Map<String, String>();
+        config.put('Is_Production__c', String.valueOf(![SELECT Id, Name, IsSandbox FROM Organization].IsSandbox));
         config.put('Token_Endpoint__c', TOKEN_ENDPOINT);
         config.put('Request_Auth_Domain__c', 'authDomain');
         config.put('Request_Integration_Key__c', 'integrationKey');
         config.put('Request_Private_Key__c', 'MIIEpAIBAAKCAQEAxCg+YPlTDjljhg7YQs4n6jMAth0raDV6rnQ0z5MC+Fhr/k0W2pKZcqZ7Rp260f36CgbG2lzMZacBhZeY2JWQUjfXG5UuRi4w259uGTVP+iS/n7LRABeFneYp663TOH2NE7ELmK2ycks12AOW5WIayJbADzKEiwgU1ulYXioZ5jXiUdE92mciu1HwOV/EUM6EPraaCG9Ufv+cL/VcEp6qW+IB3J31mYF+jfDo4+wMkwJLu+qgRcV+Zfas0GFuqlJoBYu7gAce/2+TtC1jKpOTM9vKk4uNqiwB5BsMIi1PIpLR2hWnpF6gr9y1lG0ChGUTXpbM9wvl22Znst/QslFjewIDAQABAoIBAAz7PNNL0VIp80Hj8sCCNC115zK4dJyo5D2Sx8LLz96B4BqZ+JXJ5MAZprW9qoLdc//YJ4nyzs+CPMHU16nP/BdijzruXHvmOYWGLT+t1Bv/hypicNS4uclKeiKZBA4Mbr9m3c6+AlAU59fitzZUtFNY5qhj9TGVIZ43Z65Kgde0i3ySxO8syVKYZ5baXwRWTKeC5m4/XtCI4fptTZIGKV/wPpGdh0bX4tLqk+LFU7wSCQEcS5UIjIWalJyEKJTIw0Z9gNMGxUryDC1ocGHjXuUEQQ5g6MCfEPJiTpPI9lrZMjnLZ1IadtGVF8uAaiD4FSvOWd5JXOj1eMYbruDoKwECgYEA7W97uoWubtVZ/TVgagmVCeioTCAGxR/M6cNtUFm3wduJqVIejyKPj+lpxNaFPszmvPK941pR6+GRvE1bswzn5nbUqwvcUVyfHt68U1GLutgVNF9beMPP8eqTH/QLa4xgtgo1jNeM0dkAsvIhQ4ImI1g4mADEKVYprYOiDoW5ljECgYEA036Ia/GGfDcVxXVYQISzlZVKIBqortABGj9gpqTIJkT0ZRz5pcBSBxlh1xr00mnSrJ5dKkHBU3x8wYwmsDn455jJp8virDX6MlplqDspZIL8IGc0ULYjcNM5wBu+ZfV4xirQDS+bP4YVrB5nnGOXSAeCXcUMUgDhbEM3H4ipLWsCgYA24jc6hV4t1nlns2fm+vINiU8l0Z1fAZvPSVJCaYq1b/bhQc84jOecf3roeiHww1JuyLmmDSG0ob6bRVJ2D/ym5D8CjspNsFhDvX7Qz5+5/+re4U/2mWS+6dc6YqIlKRzN14xLUyQE+eFUe+2+eh4wu1rRoBO37mfR6QST0Mt2cQKBgQC2k4Uxqk9u7B7fV23YRLbDax2SmXEFeIt7HTtSoO4oG17f6yOY823cswzDpYG0I6a7XfsPf7RlXhJVA6hiealmRX/QWzJTeEWFMoSPtoMFQg5l6rI++v2daLtyHIFBg6e/azYwK+jZ7ebHr3fCijcO92yThogcQqZXz67GijOCAQKBgQDD8avFNgz6Q9Tfec1ucybjQRtdhAGBOTCJjAyC69ZGwdkMOX7bw8ZcYS3anYE7FeAlCoFxQX9lLQsP87kdLRD4x/CVNHXk3p2AzmeNu4Dn7x0ppYPU/qObhc0h4f5QvNygteP2/t5L29m4fWZWs/jwi1o67ZKXwgnkp5O8CgN2dQ==');
         config.put('Request_Scope__c', 'scope1,scope2');
         config.put('DocuSign_User_ID__c', 'docuSignUserID');
+        config.put('Callback_URL__c', 'callbackURL');
 
         return config;
     }

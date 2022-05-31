@@ -8,6 +8,17 @@ public with sharing class DocusignAuthProvider extends Auth.AuthProviderPluginCl
 
     private IRefreshTokenGenerator generator = new DefaultRefreshTokenGenerator();
 
+    public Boolean isProduction {
+        get {
+            if (isProduction == null) {
+                Organization org = [SELECT Id, Name, IsSandbox FROM Organization];
+                isProduction = !org.IsSandbox;
+            }
+            return isProduction;
+        }
+        set;
+    }
+
     @SuppressWarnings('PMD.EmptyStatementBlock')
     public DocusignAuthProvider() { }
     public DocusignAuthProvider(IRefreshTokenGenerator gen) {
@@ -15,14 +26,21 @@ public with sharing class DocusignAuthProvider extends Auth.AuthProviderPluginCl
     }
 
     public String getCustomMetadataType() {
-
         return CUSTOM_METADATA_TYPE;
     }
 
+
     @SuppressWarnings('PMD.ApexOpenRedirect')
     public PageReference initiate(Map<String, String> authProviderConfiguration, String stateToPropagate) {
-        final String baseUrl = URL.getSalesforceBaseUrl().toExternalForm();
-        final String url = baseUrl + '/services/authcallback/DocuSignClientCredentials' + '?state=' + stateToPropagate;
+        validateAuthProviderConfiguration(authProviderConfiguration);
+
+        final String retURL = URL.getSalesforceBaseUrl().toExternalForm() + authProviderConfiguration.get('Callback_URL__c') + '&state=' + stateToPropagate;
+        final String scope = authProviderConfiguration.get('Request_Scope__c');
+        final String integrationKey = authProviderConfiguration.get('Request_Integration_Key__c');
+        final String authDomain = authProviderConfiguration.get('Request_Auth_Domain__c');
+
+
+        final String url = 'https://' + authDomain + '/oauth/auth?response_type=code&scope=' + EncodingUtil.urlEncode(scope, 'UTF-8') + '&client_id=' + integrationKey + '&redirect_uri=' +  retURL;
 
         return new PageReference(url);
     }
@@ -60,6 +78,14 @@ public with sharing class DocusignAuthProvider extends Auth.AuthProviderPluginCl
     }
 
     private String retrieveToken(Map<String, String> config) {
+        validateAuthProviderConfiguration(config);
+
+        // First check if the Auth Provider is intended to use in the sandbox we're in.  This is trying to prevent unintended requests after refreshing.
+        final Boolean isProductionAuthProvider = Boolean.valueOf(config.get('Is_Production__c'));
+        if (isProductionAuthProvider != isProduction) {
+            throw new DocuSignAuthException('Auth Provider not valid for sandbox type.');
+        }
+
         final String tokenEndpoint = config.get('Token_Endpoint__c');
         final String authRequestDomain = config.get('Request_Auth_Domain__c');
         final String alg = 'RS256';
@@ -91,20 +117,20 @@ public with sharing class DocusignAuthProvider extends Auth.AuthProviderPluginCl
      * Get the access_token from Http response.
      */
     private String getTokenFromHttpResponse(HttpResponse res) {
-        final Map<String, Object> data = (Map<String, Object>) JSON.deserializeUntyped(res.getBody());
-        final String errorCode = (String) data.get('error');
+        if (res?.getStatusCode() == 200) {
+            Map<String, Object> data = (Map<String, Object>) JSON.deserializeUntyped(res.getBody());
+            String accessToken = data.containsKey('access_token') ? (String) data.get('access_token') : '';
+            return accessToken;
+        } else {
+            Map<String, Object> data = (Map<String, Object>) JSON.deserializeUntyped(res.getBody());
 
-        if (String.isNotEmpty(errorCode)) {
-            String errorDescription = (String) data.get('error_description');
-            String errorURI = (String) data.get('error_uri');
+            String errorCode = data.containsKey('error') ? (String) data.get('error') : '';
+            String errorDescription = data.containsKey('error_description') ? (String) data.get('error_description') : '';
+
             throw new DocuSignAuthException(errorDescription).setDetails(
                 errorCode,
-                (String) data.get('error_description'),
-                (String) data.get('error_uri')
+                errorDescription
             );
-        } else {
-
-            return (String) data.get('access_token');
         }
     }
 
@@ -113,15 +139,33 @@ public with sharing class DocusignAuthProvider extends Auth.AuthProviderPluginCl
         return this.generator.generate();
     }
 
+    private void validateAuthProviderConfiguration(Map<String, String> authProviderConfiguration) {
+        List<String> requiredConfigAttributes = new List<String> {
+            'Callback_URL__c',
+            'DocuSign_User_ID__c',
+            'Is_Production__c',
+            'Request_Auth_Domain__c',
+            'Request_Integration_Key__c',
+            'Request_Private_Key__c',
+            'Request_Scope__c',
+            'Token_Endpoint__c'
+        };
+
+        for (String attribute : requiredConfigAttributes) {
+            if (!authProviderConfiguration.containsKey(attribute) || String.isBlank(authProviderConfiguration.get(attribute))) {
+                throw new DocuSignAuthException('Missing ' + attribute + ' attribute from Auth Provider Config.');
+            }
+        }
+    }
+
     public class DocuSignAuthException extends Exception {
         public String error;
         public String errorDescription;
         public String errorURI;
 
-        public DocuSignAuthException setDetails(String error, String errorDescription, String errorURI) {
+        public DocuSignAuthException setDetails(String error, String errorDescription) {
             this.error = error;
             this.errorDescription = errorDescription;
-            this.errorURI = errorURI;
 
             return this;
         }
